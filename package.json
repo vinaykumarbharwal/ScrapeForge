@@ -1,0 +1,38 @@
+{
+  "name": "scrapeforge",
+  "version": "1.0.0",
+  "description": "Full-stack SaaS-grade visual web scraping platform with auto-schema generation",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:api": "npm run dev --workspace=@scrapeforge/api",
+    "dev:worker": "npm run dev --workspace=@scrapeforge/worker",
+    "dev:frontend": "npm run dev --workspace=@scrapeforge/frontend",
+    "build": "npm run build --workspaces --if-present",
+    "db:migrate": "npm run migrate --workspace=@scrapeforge/database",
+    "db:generate": "npm run generate --workspace=@scrapeforge/database",
+    "db:studio": "npm run studio --workspace=@scrapeforge/database",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down"
+  },
+  "keywords": [
+    "scraper",
+    "web-scraping",
+    "visual-builder",
+    "playwright",
+    "bullmq",
+    "auto-schema",
+    "postgres",
+    "fastify",
+    "react",
+    "typescript"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  }
+}
