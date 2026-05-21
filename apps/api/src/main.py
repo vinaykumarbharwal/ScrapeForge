@@ -72,8 +72,30 @@ async def on_shutdown():
         print("Redis pool shutdown.")
 
 @app.get("/health")
-async def health_check():
-    return {"status": "OK", "service": "scrapeforge-api"}
+async def health_check(session: AsyncSession = Depends(get_session)):
+    redis_status = "unconnected"
+    if app.state.redis_pool:
+        try:
+            await app.state.redis_pool.ping()
+            redis_status = "connected"
+        except Exception:
+            redis_status = "failed"
+            
+    db_status = "unconnected"
+    try:
+        await session.execute(text("SELECT 1"))
+        db_status = "connected"
+    except Exception:
+        db_status = "failed"
+        
+    return {
+        "status": "healthy" if db_status == "connected" and redis_status == "connected" else "degraded",
+        "service": "scrapeforge-api",
+        "dependencies": {
+            "database": db_status,
+            "redis_queue": redis_status
+        }
+    }
 
 # Pydantic Schemas for API payloads
 class RegisterPayload(BaseModel):
@@ -559,6 +581,41 @@ async def websocket_run_console(websocket: WebSocket, run_id: str):
     finally:
         await pubsub.unsubscribe(f"run_channel_{run_id}")
         await pubsub_conn.close()
+
+from fastapi import Response
+
+@app.get("/metrics")
+async def metrics(session: AsyncSession = Depends(get_session)):
+    # Fetch database metrics dynamically
+    total_tasks_res = await session.execute(text("SELECT COUNT(*) FROM scrapetask"))
+    total_tasks = total_tasks_res.scalar() or 0
+    
+    total_runs_res = await session.execute(text("SELECT COUNT(*) FROM taskrun"))
+    total_runs = total_runs_res.scalar() or 0
+    
+    failed_runs_res = await session.execute(text("SELECT COUNT(*) FROM taskrun WHERE status = 'failed'"))
+    failed_runs = failed_runs_res.scalar() or 0
+    
+    completed_runs_res = await session.execute(text("SELECT COUNT(*) FROM taskrun WHERE status = 'completed'"))
+    completed_runs = completed_runs_res.scalar() or 0
+    
+    metrics_str = f"""# HELP scrapeforge_tasks_total Total configured scrape tasks in database
+# TYPE scrapeforge_tasks_total gauge
+scrapeforge_tasks_total {total_tasks}
+
+# HELP scrapeforge_runs_total Total scrape task executions triggered
+# TYPE scrapeforge_runs_total counter
+scrapeforge_runs_total {total_runs}
+
+# HELP scrapeforge_runs_failed_total Total failed scrape task runs
+# TYPE scrapeforge_runs_failed_total counter
+scrapeforge_runs_failed_total {failed_runs}
+
+# HELP scrapeforge_runs_completed_total Total successfully completed scrape task runs
+# TYPE scrapeforge_runs_completed_total counter
+scrapeforge_runs_completed_total {completed_runs}
+"""
+    return Response(content=metrics_str, media_type="text/plain; version=0.0.4")
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 3000))

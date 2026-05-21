@@ -10,6 +10,7 @@ import Dashboard from './pages/Dashboard';
 import Tasks from './pages/Tasks';
 import Settings from './pages/Settings';
 import VisualBuilder from './pages/VisualBuilder';
+import Templates from './pages/Templates';
 
 const queryClient = new QueryClient();
 
@@ -67,6 +68,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <Settings />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/templates" 
+            element={
+              <ProtectedRoute>
+                <Templates />
               </ProtectedRoute>
             } 
           />

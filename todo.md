@@ -16,7 +16,7 @@ This document lists all action items required to build the ScrapeForge platform 
 - [x] **Scraping Engine: Selector & Field Extractor**:
   - [x] Create `FieldExtractor` class using BeautifulSoup4 / lxml to scan DOM trees based on CSS selectors in the task configuration.
   - [x] Support text, attribute (e.g. `href`, `src`), and raw HTML parsing modes.
-- [ ] **Scraping Engine: Type Inference Engine**:
+- [x] **Scraping Engine: Type Inference Engine**:
   - [x] Create Python type inference logic in `packages/core/core/scraping/inference.py` to match string values to PostgreSQL data types (`TEXT`, `BIGINT`, `NUMERIC`, `TIMESTAMPTZ`, `BOOLEAN`, `JSONB`) with confidence scoring.
   - [x] Complete edge-case tests (handling currency symbols, ISO dates, array elements).
 - [x] **Scraping Engine: Auto-Schema Diff & Migrations**:
@@ -93,18 +93,18 @@ This document lists all action items required to build the ScrapeForge platform 
 ## 🚀 Phase 5: Production Hardening, LLM Enrichment & Scale (Target: Milestone 5)
 *Goal: Enterprise scalability, AI enhancements, security validation, and deployment.*
 
-- [ ] **SSRF & Security Shielding**:
-  - [ ] Restrict scraper target URLs to block local hostnames and internal IP ranges (`127.x.x.x`, `10.x.x.x`, etc.).
-  - [ ] Sandbox Playwright container execution context.
-- [ ] **AI-Assisted Field Renamer**:
-  - [ ] Send samples of dynamic columns to LLM (e.g. Claude / Gemini) to auto-enrich names (e.g. rename `div_class_price` -> `product_price`).
-- [ ] **Public Templates Gallery**:
-  - [ ] Implement catalog schemas and template exports allowing configuration sharing.
-- [ ] **Advanced Exports**:
-  - [ ] Add Excel (.xlsx) formatting capability using `openpyxl` / `pandas`.
-- [ ] **Observability**:
-  - [ ] Set up Prometheus instrumentation endpoints and configure Grafana dashboards.
-  - [ ] Expose `arq` dashboards for worker queue health monitoring.
-- [ ] **Deployment**:
-  - [ ] Create production Multi-stage Dockerfiles.
-  - [ ] Configure Docker Compose production configs.
+- [x] **SSRF & Security Shielding**:
+  - [x] Restrict scraper target URLs to block local hostnames and internal IP ranges (`127.x.x.x`, `10.x.x.x`, etc.).
+  - [x] Sandbox Playwright container execution context.
+- [x] **AI-Assisted Field Renamer**:
+  - [x] Send samples of dynamic columns to LLM (e.g. Claude / Gemini) to auto-enrich names (e.g. rename `div_class_price` -> `product_price`).
+- [x] **Public Templates Gallery**:
+  - [x] Implement catalog schemas and template exports allowing configuration sharing.
+- [x] **Advanced Exports**:
+  - [x] Add Excel (.xlsx) formatting capability using `openpyxl` / `pandas`.
+- [x] **Observability**:
+  - [x] Set up Prometheus instrumentation endpoints and configure Grafana dashboards.
+  - [x] Expose `arq` dashboards for worker queue health monitoring.
+- [x] **Deployment**:
+  - [x] Create production Multi-stage Dockerfiles.
+  - [x] Configure Docker Compose production configs.

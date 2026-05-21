@@ -236,7 +236,7 @@ export default function Tasks() {
     }
   };
 
-  const handleExportData = async (format: 'csv' | 'json') => {
+  const handleExportData = async (format: 'csv' | 'json' | 'xlsx') => {
     if (!activeData || activeData.rows.length === 0) return;
     
     // Find latest run_id from table rows
@@ -505,6 +505,16 @@ export default function Tasks() {
                       >
                         {exportingFormat === 'csv' ? <RefreshCw size={14} className="spin-anim" /> : <Download size={14} />}
                         <span>{exportingFormat === 'csv' ? 'Compiling CSV...' : 'Export CSV'}</span>
+                      </button>
+                      
+                      <button 
+                        onClick={() => handleExportData('xlsx')} 
+                        className="btn btn-secondary" 
+                        disabled={exportingFormat !== null}
+                        style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', fontSize: '13px' }}
+                      >
+                        {exportingFormat === 'xlsx' ? <RefreshCw size={14} className="spin-anim" /> : <Download size={14} />}
+                        <span>{exportingFormat === 'xlsx' ? 'Compiling Excel...' : 'Export Excel'}</span>
                       </button>
                       
                       <button 

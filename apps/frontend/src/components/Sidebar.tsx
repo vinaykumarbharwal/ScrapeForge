@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, ListTodo, LogOut, Terminal, Award } from 'lucide-react';
+import { LayoutDashboard, ListTodo, LogOut, Terminal, Award, BookOpen } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 
 export default function Sidebar() {
@@ -16,6 +16,7 @@ export default function Sidebar() {
   const navItems = [
     { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { to: '/tasks', label: 'Scrape Tasks', icon: ListTodo },
+    { to: '/templates', label: 'Templates Gallery', icon: BookOpen },
     { to: '/settings', label: 'Developer APIs', icon: Terminal },
   ];
 

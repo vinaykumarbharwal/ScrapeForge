@@ -5,7 +5,7 @@ import Header from '../components/Header';
 import { useAuthStore } from '../store/authStore';
 import { 
   Globe, ArrowLeft, Trash2, 
-  Terminal, Check, Info, RefreshCw
+  Terminal, Check, Info, RefreshCw, Sparkles
 } from 'lucide-react';
 
 interface ElementCoord {
@@ -46,6 +46,35 @@ export default function VisualBuilder() {
   const [selectedElement, setSelectedElement] = useState<ElementCoord | null>(null);
   const [newFieldName, setNewFieldName] = useState('');
   const [newFieldType, setNewFieldType] = useState('text');
+
+  const [suggestingSchema, setSuggestingSchema] = useState(false);
+
+  const handleAISuggest = async () => {
+    if (fields.length === 0) return;
+    setSuggestingSchema(true);
+    try {
+      const res = await fetch('http://localhost:3000/api/ai/enrich-schema', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ columns: fields.map(f => f.name) })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        const updatedFields = fields.map(f => ({
+          ...f,
+          name: data[f.name] || f.name
+        }));
+        setFields(updatedFields);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSuggestingSchema(false);
+    }
+  };
 
   const handleCapture = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -208,7 +237,20 @@ export default function VisualBuilder() {
               </div>
 
               <div style={styles.fieldsContainer}>
-                <h4 style={styles.fieldsTitle}>Mapped Fields ({fields.length})</h4>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                  <h4 style={{ ...styles.fieldsTitle, margin: 0 }}>Mapped Fields ({fields.length})</h4>
+                  {fields.length > 0 && (
+                    <button 
+                      onClick={handleAISuggest} 
+                      className="btn btn-secondary" 
+                      style={{ padding: '4px 8px', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px' }}
+                      disabled={suggestingSchema}
+                    >
+                      <Sparkles size={12} color="#8b5cf6" />
+                      <span>{suggestingSchema ? 'Renaming...' : 'AI Clean Names'}</span>
+                    </button>
+                  )}
+                </div>
                 {fields.length === 0 ? (
                   <div style={styles.emptyFields}>
                     <Info size={16} color="#6b7280" />
