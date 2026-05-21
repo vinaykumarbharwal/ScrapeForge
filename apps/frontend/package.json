@@ -10,7 +10,6 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@scrapeforge/shared": "*",
     "@tanstack/react-query": "^5.25.0",
     "lucide-react": "^0.344.0",
     "react": "^19.2.6",
