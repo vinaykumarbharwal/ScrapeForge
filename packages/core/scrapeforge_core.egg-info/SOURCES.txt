@@ -1,0 +1,16 @@
+setup.py
+core/__init__.py
+core/auth.py
+core/db.py
+core/models.py
+core/schemas.py
+core/scraping/__init__.py
+core/scraping/extractor.py
+core/scraping/inference.py
+core/scraping/loader.py
+core/scraping/migration.py
+scrapeforge_core.egg-info/PKG-INFO
+scrapeforge_core.egg-info/SOURCES.txt
+scrapeforge_core.egg-info/dependency_links.txt
+scrapeforge_core.egg-info/requires.txt
+scrapeforge_core.egg-info/top_level.txt

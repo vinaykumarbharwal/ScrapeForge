@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, ListTodo, LogOut, Terminal, Award, Settings } from 'lucide-react';
+import { LayoutDashboard, ListTodo, LogOut, Terminal, Award } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 
 export default function Sidebar() {

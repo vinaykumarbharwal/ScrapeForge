@@ -1,19 +1,23 @@
 import os
 import uuid
 import uvicorn
+import base64
 from datetime import datetime
 from typing import List, Optional, Dict, Any
+from playwright.async_api import async_playwright
 from fastapi import FastAPI, Depends, HTTPException, status, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import BaseModel, EmailStr
-from sqlmodel import select, func
+from sqlmodel import select, func, text
 from sqlmodel.ext.asyncio.session import AsyncSession
 from dotenv import load_dotenv
 
+from fastapi.staticfiles import StaticFiles
 # Core dependencies
 from core.db import init_db, get_session, engine
-from core.models import User, ScrapeTask, TaskRun, SchemaRegistry
+from core.models import User, ScrapeTask, TaskRun, SchemaRegistry, Export
+from core.security import is_safe_url
 from core.auth import (
     hash_password,
     verify_password,
@@ -51,6 +55,10 @@ app.add_middleware(
 async def on_startup():
     # Setup relational base schemas
     await init_db()
+    
+    # Create static exports directory if not exists
+    os.makedirs("apps/api/public/exports", exist_ok=True)
+    app.mount("/exports", StaticFiles(directory="apps/api/public/exports"), name="exports")
     
     # Setup worker queues connection pool
     redis_url = os.environ.get("REDIS_URL", "redis://localhost:6379")
@@ -356,17 +364,201 @@ async def get_scraped_data(
             "total": total
         }
 
+# --- EXPORTS ENDPOINTS ---
+
+class ExportPayload(BaseModel):
+    format: str
+
+@app.post("/api/runs/{run_id}/export")
+async def trigger_run_export(
+    run_id: uuid.UUID,
+    payload: ExportPayload,
+    current_user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_session)
+):
+    # Verify task ownership before exporting
+    stmt = select(TaskRun).join(ScrapeTask).where(
+        TaskRun.id == run_id,
+        ScrapeTask.user_id == current_user.id
+    )
+    res = await session.execute(stmt)
+    run = res.scalar_one_or_none()
+    if not run:
+        raise HTTPException(status_code=404, detail="Run not found")
+        
+    export = Export(
+        task_run_id=run.id,
+        format=payload.format,
+        status="pending"
+    )
+    session.add(export)
+    await session.commit()
+    await session.refresh(export)
+    
+    # Enqueue export worker job
+    await app.state.redis_pool.enqueue_job("export_task_data_job", export_id=str(export.id))
+    
+    return {"export_id": str(export.id), "status": "pending"}
+
+@app.get("/api/exports/{export_id}")
+async def get_export_status(
+    export_id: uuid.UUID,
+    current_user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_session)
+):
+    stmt = select(Export).join(TaskRun).join(ScrapeTask).where(
+        Export.id == export_id,
+        ScrapeTask.user_id == current_user.id
+    )
+    res = await session.execute(stmt)
+    export = res.scalar_one_or_none()
+    if not export:
+        raise HTTPException(status_code=404, detail="Export not found")
+        
+    return {
+        "id": str(export.id),
+        "status": export.status,
+        "file_url": export.file_url,
+        "file_size_bytes": export.file_size_bytes,
+        "created_at": export.created_at.isoformat()
+    }
+
+class ScreenshotPayload(BaseModel):
+    url: str
+
+@app.post("/api/screenshot-proxy")
+async def screenshot_proxy(payload: ScreenshotPayload, current_user: User = Depends(get_current_user)):
+    if not is_safe_url(payload.url):
+        raise HTTPException(status_code=400, detail="Target URL blocked by security shield: SSRF protection active.")
+    try:
+        async with async_playwright() as p:
+            browser = await p.chromium.launch(headless=True)
+            context = await browser.new_context(viewport={"width": 1280, "height": 800})
+            page = await context.new_page()
+            
+            # Go to target URL
+            await page.goto(payload.url, wait_until="networkidle", timeout=30000)
+            
+            # Capture viewport screenshot (base64)
+            screenshot_bytes = await page.screenshot(type="jpeg", quality=80)
+            base64_image = base64.b64encode(screenshot_bytes).decode("utf-8")
+            
+            # Extract DOM coordinate bounding boxes and selectors
+            js_script = """
+            () => {
+              const selectors = 'div, span, a, h1, h2, h3, h4, h5, h6, p, li, td, th, img, button, input';
+              const elements = document.querySelectorAll(selectors);
+              const results = [];
+              
+              function getSelector(el) {
+                if (el.id) {
+                  if (!/^[0-9_-]+$/.test(el.id) && el.id.length < 30) {
+                    return '#' + el.id;
+                  }
+                }
+                let path = [];
+                let current = el;
+                while (current && current.nodeType === Node.ELEMENT_NODE) {
+                  let selector = current.nodeName.toLowerCase();
+                  if (current.className) {
+                    const classes = Array.from(current.classList).filter(c => {
+                      return !/^(hover|active|focus|flex|grid|w-|h-|p-|m-|bg-|text-|border-|relative|absolute|col-|row-)/.test(c) && c.length < 25;
+                    });
+                    if (classes.length > 0) {
+                      selector += '.' + classes.slice(0, 2).join('.');
+                    }
+                  }
+                  path.unshift(selector);
+                  current = current.parentNode;
+                }
+                return path.join(' > ');
+              }
+
+              for (const el of elements) {
+                const rect = el.getBoundingClientRect();
+                if (rect.width > 10 && rect.height > 10) {
+                  results.push({
+                    selector: getSelector(el),
+                    tagName: el.tagName,
+                    box: {
+                      x: rect.left,
+                      y: rect.top,
+                      width: rect.width,
+                      height: rect.height
+                    }
+                  });
+                }
+              }
+              return results;
+            }
+            """
+            elements_data = await page.evaluate(js_script)
+            await browser.close()
+            
+            return {
+                "screenshot": f"data:image/jpeg;base64,{base64_image}",
+                "elements": elements_data
+            }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Failed to capture webpage: {str(e)}")
+
+class EnrichPayload(BaseModel):
+    columns: List[str]
+
+@app.post("/api/ai/enrich-schema")
+async def enrich_schema(payload: EnrichPayload, current_user: User = Depends(get_current_user)):
+    import re
+    suggestions = {}
+    for col in payload.columns:
+        clean = col.lower()
+        # strip tag prefix
+        clean = re.sub(r'^(div|span|a|h[1-6]|p|li|td|th|img|button|input|class|id)[_\s>]', '', clean)
+        # strip common suffixes
+        clean = re.sub(r'(_text|_html|_content|_class|_id|_link)$', '', clean)
+        # normalize symbols
+        clean = re.sub(r'[^a-z0-9_]', '_', clean)
+        # clean bounding underscores
+        clean = clean.strip('_')
+        
+        # fallback default
+        if not clean:
+            clean = "field"
+            
+        # Add random salt to avoid collisions
+        base_clean = clean
+        idx = 1
+        while clean in suggestions.values():
+            clean = f"{base_clean}_{idx}"
+            idx += 1
+            
+        suggestions[col] = clean
+    return suggestions
+
 # WebSockets Console Endpoint
 @app.websocket("/ws/runs/{run_id}")
 async def websocket_run_console(websocket: WebSocket, run_id: str):
     await websocket.accept()
+    
+    import redis.asyncio as aioredis
+    redis_url = os.environ.get("REDIS_URL", "redis://localhost:6379")
+    pubsub_conn = aioredis.from_url(redis_url)
+    pubsub = pubsub_conn.pubsub()
+    
     try:
+        await pubsub.subscribe(f"run_channel_{run_id}")
+        import asyncio
         while True:
-            # We can stream updates from redis pub/sub or keep-alive echo
-            data = await websocket.receive_text()
-            await websocket.send_text(f"Run {run_id} heartbeat active")
+            # We can stream updates from redis pub/sub
+            message = await pubsub.get_message(ignore_subscribe_messages=True, timeout=1.0)
+            if message:
+                data = message["data"].decode("utf-8")
+                await websocket.send_text(data)
+            await asyncio.sleep(0.1)
     except WebSocketDisconnect:
         pass
+    finally:
+        await pubsub.unsubscribe(f"run_channel_{run_id}")
+        await pubsub_conn.close()
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 3000))

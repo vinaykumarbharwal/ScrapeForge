@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 import { useAuthStore } from '../store/authStore';
-import { Play, CheckCircle, XCircle, Activity, Database, Clock, RefreshCw } from 'lucide-react';
+import { CheckCircle, XCircle, Activity, Database, Clock, RefreshCw } from 'lucide-react';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 
 interface RunItem {
@@ -31,8 +31,6 @@ export default function Dashboard() {
   const fetchDashboardData = async () => {
     setLoading(true);
     try {
-      // For demo / MVP, we will fetch all tasks, then get runs for tasks.
-      // In production, we'd hit a summary stats endpoint.
       const taskRes = await fetch('http://localhost:3000/api/tasks', {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -47,11 +45,9 @@ export default function Dashboard() {
         allRuns.push(...rList);
       }
 
-      // Sort runs by started_at descending
       allRuns.sort((a, b) => new Date(b.started_at).getTime() - new Date(a.started_at).getTime());
-      setRuns(allRuns.slice(0, 10)); // Keep top 10 recent runs
+      setRuns(allRuns.slice(0, 10));
 
-      // Calculate stats
       const total = allRuns.length;
       const success = allRuns.filter((r) => r.status === 'success').length;
       const rows = allRuns.reduce((acc, curr) => acc + curr.rows_scraped, 0);
@@ -77,7 +73,6 @@ export default function Dashboard() {
     }
   }, [token]);
 
-  // Chart data formatting
   const chartData = runs
     .slice()
     .reverse()
@@ -94,7 +89,6 @@ export default function Dashboard() {
         <Header title="Console Dashboard" />
         
         <div style={styles.content}>
-          {/* Top stats bar */}
           <div style={styles.metricsGrid}>
             <div className="glass-panel" style={styles.metricCard}>
               <div style={styles.metricHeader}>
@@ -124,9 +118,7 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Core Analytics Grid */}
           <div style={styles.analyticsGrid}>
-            {/* Chart Area */}
             <div className="glass-panel" style={styles.chartPanel}>
               <div style={styles.panelHeader}>
                 <h3 style={styles.panelTitle}>Ingestion Velocity (Recent Runs)</h3>
@@ -163,7 +155,6 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Run Feed */}
             <div className="glass-panel" style={styles.feedPanel}>
               <h3 style={styles.panelTitle}>Active Logging Streams</h3>
               
@@ -259,9 +250,6 @@ const styles: Record<string, React.CSSProperties> = {
     gridTemplateColumns: '2fr 1fr',
     gap: '24px',
     alignItems: 'start',
-    '@media (max-width: 1024px)': {
-      gridTemplateColumns: '1fr',
-    },
   },
   chartPanel: {
     display: 'flex',

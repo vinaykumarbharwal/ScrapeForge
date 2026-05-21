@@ -45,48 +45,48 @@ This document lists all action items required to build the ScrapeForge platform 
   - [x] `GET /api/tasks` - Paginated task definitions.
   - [x] `GET /api/tasks/{id}` - Detailed task information.
   - [x] `GET /api/runs/{id}` - List of runs for a task.
-- [ ] **React Frontend Setup**:
-  - [ ] Set up React Router and TanStack Query providers in `@scrapeforge/frontend`.
-  - [ ] Implement UI State Management using Zustand.
-- [ ] **Frontend Core Pages**:
-  - [ ] Build Register & Login pages with visual validation.
-  - [ ] Create authenticated sidebar shell and header dashboard container.
-  - [ ] Build **Tasks List View** displaying cards with cron, name, status, and last run.
-  - [ ] Build **Runs History Dashboard** showing progress states, row count, and execution time.
+- [x] **React Frontend Setup**:
+  - [x] Set up React Router and TanStack Query providers in `@scrapeforge/frontend`.
+  - [x] Implement UI State Management using Zustand.
+- [x] **Frontend Core Pages**:
+  - [x] Build Register & Login pages with visual validation.
+  - [x] Create authenticated sidebar shell and header dashboard container.
+  - [x] Build **Tasks List View** displaying cards with cron, name, status, and last run.
+  - [x] Build **Runs History Dashboard** showing progress states, row count, and execution time.
 
 ---
 
 ## 📅 Phase 3: Scheduling, Exports & WebSocket Streams (Target: Milestone 3)
 *Goal: Scheduled scrapers run automatically; data can be viewed and downloaded.*
 
-- [ ] **arq Scheduler Configurations**:
-  - [ ] Implement cron repeatable tasks using `arq` cron definitions.
-  - [ ] Handle timezone calculations when evaluating schedule triggers.
-- [ ] **Asynchronous Export Service**:
-  - [ ] Build a background task to retrieve rows from dynamic tables and stream to CSV and JSON formats in chunks.
-  - [ ] Integrate with local S3 (MinIO) using `aioboto3` or `httpx` to upload exports with presigned URL download capabilities.
-- [ ] **WebSocket Live Stream**:
+- [x] **arq Scheduler Configurations**:
+  - [x] Implement cron repeatable tasks using `arq` cron definitions.
+  - [x] Handle timezone calculations when evaluating schedule triggers.
+- [x] **Asynchronous Export Service**:
+  - [x] Build a background task to retrieve rows from dynamic tables and stream to CSV and JSON formats in chunks.
+  - [x] Integrate with local S3 (MinIO) using `aioboto3` or `httpx` to upload exports with presigned URL download capabilities.
+- [x] **WebSocket Live Stream**:
   - [x] Add FastAPI WebSocket router at `/ws/runs/{run_id}`.
-  - [ ] Integrate database/redis event publishing to broadcast real-time scraper progress (running pages, error logs, row counts, schema shifts) to connected clients.
-- [ ] **Notification System**:
-  - [ ] Create email dispatch mechanisms using `aiosmtplib` for task failure alerts.
+  - [x] Integrate database/redis event publishing to broadcast real-time scraper progress (running pages, error logs, row counts, schema shifts) to connected clients.
+- [x] **Notification System**:
+  - [x] Create email dispatch mechanisms using `aiosmtplib` for task failure alerts.
 
 ---
 
 ## 🖱️ Phase 4: Visual Scraper Builder & Selector Overlay (Target: Milestone 4)
 *Goal: Non-technical users can configure scrapers by pointing and clicking on target websites.*
 
-- [ ] **FastAPI Screenshot Proxy**:
-  - [ ] Implement endpoint that launches a headless browser, navigates to target URL, captures a screenshot, and returns it.
-  - [ ] Serialize DOM tag bounding coordinates for hover maps.
-- [ ] **Visual Builder Canvas**:
-  - [ ] Render screenshot in interactive React canvas overlay.
-  - [ ] Implement mouse-tracking highlights over elements.
-- [ ] **Selector Path Generator**:
-  - [ ] Generate stable, minimal CSS selectors using DOM traversal heuristics.
-  - [ ] Exclude dynamic ID identifiers and state utility classes.
-- [ ] **Config Mapper Panel**:
-  - [ ] Build sidebar forms mapping names (`price`, `title`), testing selectors, and configuring pagination rules.
+- [x] **FastAPI Screenshot Proxy**:
+  - [x] Implement endpoint that launches a headless browser, navigates to target URL, captures a screenshot, and returns it.
+  - [x] Serialize DOM tag bounding coordinates for hover maps.
+- [x] **Visual Builder Canvas**:
+  - [x] Render screenshot in interactive React canvas overlay.
+  - [x] Implement mouse-tracking highlights over elements.
+- [x] **Selector Path Generator**:
+  - [x] Generate stable, minimal CSS selectors using DOM traversal heuristics.
+  - [x] Exclude dynamic ID identifiers and state utility classes.
+- [x] **Config Mapper Panel**:
+  - [x] Build sidebar forms mapping names (`price`, `title`), testing selectors, and configuring pagination rules.
 
 ---
 

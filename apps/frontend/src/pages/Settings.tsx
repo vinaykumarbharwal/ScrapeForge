@@ -82,7 +82,7 @@ export default function Settings() {
             </div>
           </div>
 
-          <div style={{ marginTop: '40px' }} style={styles.sectionHeader}>
+          <div style={{ ...styles.sectionHeader, marginTop: '40px' }}>
             <h2 style={styles.sectionTitle}>API Usage Guidelines</h2>
             <p style={styles.sectionSub}>Triggering tasks and fetching dynamic datasets programmatically</p>
           </div>

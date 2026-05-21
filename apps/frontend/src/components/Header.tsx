@@ -1,14 +1,11 @@
 import React from 'react';
-import { Sparkles, Terminal } from 'lucide-react';
-import { useAuthStore } from '../store/authStore';
+import { Sparkles } from 'lucide-react';
 
 interface HeaderProps {
   title: string;
 }
 
 export default function Header({ title }: HeaderProps) {
-  const user = useAuthStore((state) => state.user);
-
   return (
     <header style={styles.header}>
       <div>
