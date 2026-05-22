@@ -34,7 +34,7 @@ from jwt.exceptions import PyJWTError
 from arq import create_pool
 from arq.connections import RedisSettings
 
-load_dotenv()
+load_dotenv(override=True)
 
 app = FastAPI(
     title="ScrapeForge API Gateway",
@@ -616,7 +616,6 @@ scrapeforge_runs_failed_total {failed_runs}
 scrapeforge_runs_completed_total {completed_runs}
 """
     return Response(content=metrics_str, media_type="text/plain; version=0.0.4")
-
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 3000))
-    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=True, reload_dirs=["apps/api/src", "packages/core/core"])

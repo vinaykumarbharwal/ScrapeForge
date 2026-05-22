@@ -27,7 +27,7 @@ from core.security import is_safe_url
 from playwright.async_api import async_playwright, Page, Browser
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(override=True)
 
 async def execute_pagination(page: Page, config: Dict[str, Any], page_num: int) -> bool:
     pag_config = config.get("pagination", {})
