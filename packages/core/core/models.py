@@ -52,7 +52,6 @@ class ScrapeTask(SQLModel, table=True):
 class TaskRun(SQLModel, table=True):
     __tablename__ = "task_runs"
 
-    sa_column_kwargs = {}
     id: uuid.UUID = Field(
         default_factory=uuid.uuid4,
         primary_key=True,
@@ -108,7 +107,6 @@ class Export(SQLModel, table=True):
     created_at: datetime = Field(default_factory=datetime.utcnow, sa_column_kwargs={"server_default": text("now()")} )
 
     # Relationships
-    sa_column_kwargs = {}
     task_run: TaskRun = Relationship(back_populates="exports")
 
 class SchemaRegistry(SQLModel, table=True):

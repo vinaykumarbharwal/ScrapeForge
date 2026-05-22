@@ -3,7 +3,9 @@ core/__init__.py
 core/auth.py
 core/db.py
 core/models.py
+core/notifications.py
 core/schemas.py
+core/security.py
 core/scraping/__init__.py
 core/scraping/extractor.py
 core/scraping/inference.py
