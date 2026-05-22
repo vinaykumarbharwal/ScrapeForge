@@ -130,3 +130,33 @@ miniodata/
 downloads/
 screenshots/
 tmp/
+
+# Python compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+
+# Python packaging/distribution
+*.egg-info/
+.eggs/
+eggs/
+parts/
+sdist/
+develop-eggs/
+dist/
+wheels/
+pip-log.txt
+setup.cfg
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# Data and exports directory
+apps/api/public/exports/*
+!apps/api/public/exports/.gitkeep
+
