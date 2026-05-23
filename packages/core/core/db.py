@@ -4,8 +4,12 @@ from sqlmodel import SQLModel, create_engine
 from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.orm import sessionmaker
+from dotenv import load_dotenv
 
 from urllib.parse import urlparse, urlunparse, parse_qsl, urlencode
+
+# Load environment variables early before database URL parsing
+load_dotenv(override=True)
 
 DATABASE_URL = os.environ.get(
     "DATABASE_URL", "postgresql+asyncpg://postgres:postgrespassword@localhost:5432/scrapeforge"

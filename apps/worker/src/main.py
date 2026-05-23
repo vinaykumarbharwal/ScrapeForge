@@ -1,4 +1,7 @@
 import os
+from dotenv import load_dotenv
+load_dotenv(override=True)
+
 import json
 import asyncio
 import traceback
@@ -25,9 +28,6 @@ from core.notifications import send_failure_email
 from core.security import is_safe_url
 
 from playwright.async_api import async_playwright, Page, Browser
-from dotenv import load_dotenv
-
-load_dotenv(override=True)
 
 async def execute_pagination(page: Page, config: Dict[str, Any], page_num: int) -> bool:
     pag_config = config.get("pagination", {})

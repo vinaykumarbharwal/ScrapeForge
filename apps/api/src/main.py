@@ -1,4 +1,7 @@
 import os
+from dotenv import load_dotenv
+load_dotenv(override=True)
+
 import uuid
 import uvicorn
 import base64
@@ -11,7 +14,6 @@ from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import BaseModel, EmailStr
 from sqlmodel import select, func, text
 from sqlmodel.ext.asyncio.session import AsyncSession
-from dotenv import load_dotenv
 
 from fastapi.staticfiles import StaticFiles
 # Core dependencies
@@ -33,8 +35,6 @@ import jwt
 from jwt.exceptions import PyJWTError
 from arq import create_pool
 from arq.connections import RedisSettings
-
-load_dotenv(override=True)
 
 app = FastAPI(
     title="ScrapeForge API Gateway",
