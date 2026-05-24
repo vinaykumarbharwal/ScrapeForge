@@ -1,7 +1,7 @@
 import os
 import secrets
 import hashlib
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional, Dict, Any
 import jwt
 from jwt.exceptions import PyJWTError
@@ -48,20 +48,20 @@ def hash_api_key(api_key: str) -> str:
 
 # JWT Token creation
 def create_access_token(user_id: str, email: str) -> str:
-    expires = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    expires = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     payload = {
         "sub": user_id,
         "email": email,
-        "exp": expires.timestamp(),  # Standard Unix epoch timestamp
+        "exp": expires,  # PyJWT converts timezone-aware datetime to correct UTC epoch
         "type": "access"
     }
     return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
 
 def create_refresh_token(user_id: str) -> str:
-    expires = datetime.utcnow() + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
+    expires = datetime.now(timezone.utc) + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
     payload = {
         "sub": user_id,
-        "exp": expires.timestamp(),  # Standard Unix epoch timestamp
+        "exp": expires,  # PyJWT converts timezone-aware datetime to correct UTC epoch
         "type": "refresh"
     }
     return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)

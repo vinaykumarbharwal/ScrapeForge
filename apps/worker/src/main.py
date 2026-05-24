@@ -2,6 +2,7 @@ import os
 from dotenv import load_dotenv
 load_dotenv(override=True)
 
+import re
 import json
 import asyncio
 import traceback
@@ -20,7 +21,7 @@ from sqlalchemy import text
 from core.db import async_session_maker, engine
 from core.models import ScrapeTask, TaskRun, SchemaRegistry, Export
 from core.schemas import TaskConfig, SelectorField, ColumnSchema
-from core.scraping.loader import ScraperLoader
+from core.scraping.loader import ScraperLoader, apply_anti_detection
 from core.scraping.extractor import FieldExtractor
 from core.scraping.inference import infer_type
 from core.scraping.migration import SchemaDiffer, MigrationRunner
@@ -133,18 +134,16 @@ async def scrape_task_job(ctx, task_id: str, run_id: str):
         try:
             # 1. Scraping Loop using Loader and Extractor
             async with async_playwright() as p:
-                loader = ScraperLoader(p)
-                browser = await loader.launch_browser()
-                
                 # Fetch rate limit config
                 rate_limit = config_data.get("rateLimit", {})
                 delay_ms = rate_limit.get("delayMs", 1000)
-                loader.rate_limit_delay = delay_ms / 1000.0
+                
+                loader = ScraperLoader(rate_limit_ms=delay_ms)
+                browser = await p.chromium.launch(headless=True)
                 
                 context = await browser.new_context()
-                await loader.apply_anti_detection(context)
-                
                 page = await context.new_page()
+                await apply_anti_detection(page)
                 
                 pag_config = config_data.get("pagination", {})
                 max_pages = pag_config.get("maxPages", 1)
@@ -172,7 +171,7 @@ async def scrape_task_job(ctx, task_id: str, run_id: str):
                         extractor = FieldExtractor(html_content)
                         
                         container_sel = config_data.get("containerSelector")
-                        extracted = extractor.extract(fields, container_selector=container_sel)
+                        extracted = extractor.extract_list(fields, container_selector=container_sel)
                         all_extracted_rows.extend(extracted)
                         print(f"Extracted {len(extracted)} rows from page {page_num}")
                         await publish_status(ctx, run_id, "running", page_num, len(all_extracted_rows), f"Successfully parsed {len(extracted)} items.")
@@ -262,8 +261,42 @@ async def scrape_task_job(ctx, task_id: str, run_id: str):
                     
                     for row in all_extracted_rows:
                         binds = {"run_id": run_uuid}
-                        for col in col_names:
-                            binds[col] = row.get(col)
+                        for col in inferred_cols:
+                            raw_val = row.get(col.name)
+                            if raw_val is None:
+                                binds[col.name] = None
+                                continue
+                                
+                            val_str = str(raw_val).strip()
+                            if not val_str:
+                                binds[col.name] = None
+                                continue
+
+                            # Coerce values depending on database column types to prevent DataErrors
+                            if "NUMERIC" in col.pg_type:
+                                # Strip currency symbols, commas, spaces, keeping digits, dot and minus sign
+                                cleaned = re.sub(r"[^\d\.\-]", "", val_str)
+                                try:
+                                    binds[col.name] = float(cleaned) if len(cleaned) > 0 else None
+                                except ValueError:
+                                    binds[col.name] = None
+                            elif "BIGINT" in col.pg_type:
+                                cleaned = re.sub(r"[^\d\-]", "", val_str)
+                                try:
+                                    binds[col.name] = int(cleaned) if len(cleaned) > 0 else None
+                                except ValueError:
+                                    binds[col.name] = None
+                            elif "BOOLEAN" in col.pg_type:
+                                l_val = val_str.lower()
+                                if l_val in ("true", "1", "yes", "y"):
+                                    binds[col.name] = True
+                                elif l_val in ("false", "0", "no", "n"):
+                                    binds[col.name] = False
+                                else:
+                                    binds[col.name] = None
+                            else:
+                                binds[col.name] = val_str
+                                
                         await conn.execute(insert_data, binds)
 
             # Update DB run to Success
