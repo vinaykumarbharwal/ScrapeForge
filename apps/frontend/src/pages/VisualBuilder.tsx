@@ -40,6 +40,9 @@ export default function VisualBuilder() {
   // Scraper config state
   const [taskName, setTaskName] = useState('');
   const [scheduleCron, setScheduleCron] = useState('');
+  const [containerSelector, setContainerSelector] = useState('');
+  const [maxPages, setMaxPages] = useState(1);
+  const [nextSelector, setNextSelector] = useState('');
   const [fields, setFields] = useState<SelectorField[]>([]);
   
   // Field modal/prompt state
@@ -153,7 +156,12 @@ export default function VisualBuilder() {
         name: taskName,
         config: {
           startUrl: targetUrl,
-          fields
+          containerSelector: containerSelector || null,
+          fields,
+          pagination: {
+            maxPages: Number(maxPages) || 1,
+            nextSelector: nextSelector || null
+          }
         },
         schedule_cron: scheduleCron || null
       };
@@ -234,6 +242,41 @@ export default function VisualBuilder() {
                   value={scheduleCron}
                   onChange={(e) => setScheduleCron(e.target.value)}
                 />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Container Block CSS Selector (Recommended)</label>
+                <input 
+                  type="text" 
+                  className="form-input" 
+                  placeholder="e.g. div.quote or article.product_pod"
+                  value={containerSelector}
+                  onChange={(e) => setContainerSelector(e.target.value)}
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <div className="form-group" style={{ flex: 1 }}>
+                  <label className="form-label">Max Pages</label>
+                  <input 
+                    type="number" 
+                    min="1"
+                    max="100"
+                    className="form-input" 
+                    value={maxPages}
+                    onChange={(e) => setMaxPages(Number(e.target.value) || 1)}
+                  />
+                </div>
+                <div className="form-group" style={{ flex: 2 }}>
+                  <label className="form-label">Next Page CSS Selector</label>
+                  <input 
+                    type="text" 
+                    className="form-input" 
+                    placeholder="e.g. li.next a"
+                    value={nextSelector}
+                    onChange={(e) => setNextSelector(e.target.value)}
+                  />
+                </div>
               </div>
 
               <div style={styles.fieldsContainer}>

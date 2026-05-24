@@ -618,4 +618,4 @@ scrapeforge_runs_completed_total {completed_runs}
     return Response(content=metrics_str, media_type="text/plain; version=0.0.4")
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 3000))
-    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=True, reload_dirs=["apps/api/src", "packages/core/core"])
+    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=False)
