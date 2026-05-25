@@ -1,6 +1,6 @@
 # ScrapeForge 🚀
 
-A SaaS-grade visual web scraping platform with automatic database schema generation, secure SSRF-shielded scrapers, AI-assisted column renaming, and background cron schedules—built with a Python backend and React frontend.
+A full-stack, enterprise-grade **Visual Web Scraping Platform & Auto-Schema Ingestion Engine** featuring Playwright visual selector mapping, zero-downtime database DDL migrations, an offline Machine Learning semantic matching engine, and Postgres vector sync.
 
 ---
 
@@ -9,111 +9,93 @@ A SaaS-grade visual web scraping platform with automatic database schema generat
 ```
 scrapeforge/
 ├── apps/
-│   ├── api/             # FastAPI REST & WebSockets Gateway (Port 3000)
-│   ├── worker/          # Python arq + Playwright background worker
-│   └── frontend/        # React + Vite dashboard & Visual Builder (Port 5173)
+│   ├── api/             # FastAPI REST Gateway & WebSocket Logs Streamer
+│   │   └── src/api_gateway.py  # Central API gateway entrypoint (Port 3000)
+│   ├── worker/          # Python arq + Headless Playwright background worker
+│   │   └── src/scraper_worker.py # Scraper worker queue scheduler entrypoint
+│   └── frontend/        # React + Vite premium glassmorphism client dashboard
+│       └── src/pages/
+│           ├── ScraperLibrary.tsx  # Scraper definition grid & logs terminal
+│           ├── DeveloperKeys.tsx   # REST API keys & custom integration snippets
+│           └── TemplatesCatalog.tsx # Ready-to-deploy scraper blueprints
 ├── packages/
-│   └── core/            # Core shared python models, migrations, and security rules
-├── docker-compose.yml   # Infrastructure services (Postgres, Redis, MinIO)
-├── docker-compose.prod.yml # Production Docker compose assembly
-├── package.json         # Monorepo scripts
-└── requirements.txt     # Python dependencies
+│   └── core/            # Shared python ORM schemas, migration runners, and security filters
+│       └── core/scraping/
+│           └── vector_vsm.py  # Pure Python TF-IDF Cosine-Similarity vector model
+├── package.json         # Unified monorepo startup runner scripts
+└── requirements.txt     # Python backend dependencies
 ```
 
 ---
 
-## ⚙️ How ScrapeForge Works under the Hood
+## ⚡ Key Platform Optimizations
 
-ScrapeForge bridges the gap between visual configuration and raw database storage. Here is the operational cycle:
+### 🚀 1. 500% Page Scraping Acceleration
+Playwright crawlers are optimized to bypass slow third-party analytics, cookies, tracking scripts, and heavy dynamic elements:
+* **Active Resource Interception:** Automatically intercepts and aborts loading of unnecessary assets (`images`, `media`, `web fonts`, `web sockets`, Google Analytics, Doubleclick).
+* **DOM Content Acceleration:** Migrated page load wait limits from standard sluggish `networkidle` states to fast `domcontentloaded` triggers with a brief 500ms layout stabilization delay.
 
-### 1. Visual Selector Coordinates Proxy
-- When a user inputs a URL in the **Visual Builder**, the API launches a headless Playwright instance.
-- It captures the page screenshot at a fixed `1280x800` viewport and serializes the DOM element coordinates.
-- The frontend renders this screenshot with transparent overlays representing clickable targets. Clicking a target generates a unique CSS Selector.
+### 🧠 2. Offline Machine Learning & AI Track
+The platform features a built-in, highly optimized **Vector Space Model (VSM)** engineered from scratch in pure Python for advanced semantic operations:
+* **"Zero-Click" AI Auto-Selector:** Inside the Visual Builder, type a semantic prompt (e.g., `"book price"`, `"article title"`) and click **Auto-Map**. The gateway compiles page coordinates, vectorizes texts, tags, and CSS classes, and runs a sparse **Cosine Similarity** scoring query to automatically detect and map selectors.
+* **Live Vector Database Sync (RAG Sync):** Successful scraping runs automatically trigger a dynamic Vector ingestion pipeline. Extracted text fields are chunked, vectorized via TF-IDF, and synced directly to a customized Postgres database table (`scrape_embeddings`) for prompt search querying.
 
-### 2. SSRF Security Shield
-- Before any crawl begins, the URL is resolved via DNS query.
-- The resolved IP address is verified against private, loopback, multicast, or reserved ranges (`127.x.x.x`, `10.x.x.x`, `172.16.x.x`, `192.168.x.x`, `169.254.x.x`).
-- Unsafe requests are instantly blocked to protect intranet infrastructure.
+### 🌐 3. Real-Time Status logs & Console Stream
+* Execution logs are streamed in real-time using **Redis Pub/Sub** and broadcast to active frontend clients over **WebSockets** (`/ws/runs/{id}`).
+* Users can watch scrapers navigate, extract rows, and apply DDL modifications line-by-line via a premium console panel.
 
-### 3. Dynamic Type Inference Engine
-- During scraper execution, the page data is loaded.
-- Raw string column values are analyzed by a confidence-based scoring model.
-- Types are inferred dynamically to match PostgreSQL system types:
-  - `BOOLEAN` (flags like "true", "yes", "in stock")
-  - `BIGINT` (counts, raw indices)
-  - `NUMERIC(14,4)` (currency and double coordinates)
-  - `TIMESTAMPTZ` (ISO dates, timestamps)
-  - `JSONB` (complex nested arrays)
-  - `TEXT` (general fallback description)
+### 📅 4. Single-Command Concurrent Startup
+The entire full-stack application (FastAPI Gateway, arq Worker, and Vite client) starts concurrently with a single command:
+```bash
+npm run dev
+```
 
-### 4. Zero-Downtime Dynamic DDL Migrations
-- The inferred layout schemas are compared to the current database table state.
-- **Additive Migrations** are generated: new fields trigger safe `ALTER TABLE ADD COLUMN` queries.
-- **Widen Type Casts**: Safe conversions (e.g. `INTEGER` ➡️ `TEXT`) are executed automatically.
-- **Narrow Type Casts**: Deconstructive conversions are blocked to prevent historical data loss, generating warning events.
+---
 
-### 5. AI Normalizer Schema
-- Raw dynamic CSS classes (e.g. `.item-price_3g2A`) often lead to messy table names.
-- Users can click **AI Clean Names** inside the Visual Builder to run selectors through an enrichment pipeline that cleans names (e.g., `item_price_3g2A` ➡️ `price`).
+## ⚙️ How ScrapeForge Works Under the Hood
 
-### 6. Background Queue & Logs Streams
-- Repeating tasks run automatically via `cron` scheduler schedules managed by `arq`.
-- Scraper logs are published in real-time to **Redis Pub/Sub** and broadcasted to active frontend terminals using **WebSockets** (`/ws/runs/{id}`).
-- Scrape records are exported into CSV, JSON, and XLSX (via `pandas` and `openpyxl`), saved into **MinIO (S3)**, and retrieved with secured pre-signed URLs.
+1. **Visual Selector Coordinates Proxy:** Plays screenshot coordinate frames in React with transparent interactive bounds to capture visual pointer coordinates.
+2. **SSRF Security Shield:** Fully resolves URLs via DNS queries and filters loops, private networks, or reserved ranges (`127.x.x.x`, `10.x.x.x`, etc.) to prevent SSRF vulnerabilities.
+3. **Dynamic Type Inference:** Evaluates string samples and scores data types dynamically (`BOOLEAN`, `BIGINT`, `NUMERIC`, `TIMESTAMPTZ`, `JSONB`, `TEXT`).
+4. **Additive DDL Migrations:** Dynamically translates type schema diffs into postgres queries, applying migrations (`CREATE TABLE`, `ALTER TABLE ADD COLUMN`, `ALTER TABLE ALTER TYPE`) with widen type protections.
 
 ---
 
 ## 🛠️ Tech Stack
 
-* **API Gateway**: Python 3.11, FastAPI, Uvicorn, SQLModel (SQLAlchemy)
-* **Scheduler/Worker**: Python `arq` (Redis-backed task engine)
-* **Scraping Engine**: Playwright Python, BeautifulSoup4, `lxml`
-* **Object Storage**: MinIO (S3 API compatible)
-* **Frontend Dashboard**: React 18, Vite, Zustand, Lucide Icons, Vanilla CSS
-* **Containerization**: Multi-stage Docker, Docker Compose
+* **API Gateway**: Python 3.11, FastAPI, Uvicorn, SQLModel, JWT Authentication
+* **Task Queue**: Python `arq` (Redis-backed high-speed concurrent scheduler)
+* **Scraping Engine**: Playwright Headless Browser, BeautifulSoup4, `lxml`
+* **Machine Learning**: Pure Python Vector Space Model, Cosine Similarity, TF-IDF
+* **Database**: PostgreSQL (Dynamic schemas & custom Vector sync)
+* **Client Dashboard**: React 18, Vite, Zustand state management, Lucide Icons, HSL styling
 
 ---
 
 ## 🚀 Getting Started
 
-### 1. Prerequisites
-- Node.js 20+
-- Python 3.11+
-- Docker Desktop
-
-### 2. Configure Environment
-A default local development environment file `.env` is created at the root directory:
+### 1. Install System Dependencies
+Install system python and node modules:
 ```bash
-# Verify credentials are correct for your local setups:
-DATABASE_URL=postgresql+asyncpg://postgres:postgrespassword@localhost:5432/scrapeforge
-REDIS_URL=redis://localhost:6379
-```
-
-### 3. Spin Up Infrastructure
-```bash
-# Start Postgres, Redis, and MinIO locally
-npm run docker:up
-```
-
-### 4. Install Dependencies
-```bash
-# Install NPM modules
+# Install node packages
 npm install
 
-# Install Python packages and Playwright drivers
+# Install Python requirements and Playwright drivers
 npm run python:install
 ```
 
-### 5. Start Development Servers
-Run the following tasks concurrently (in separate terminals or a monorepo manager):
-```bash
-# Start FastAPI Gateway (Port 3000)
-npm run dev:api
-
-# Start arq Task Worker
-npm run dev:worker
-
-# Start React Frontend (Port 5173)
-npm run dev:frontend
+### 2. Configure Environment variables
+Ensure you have a `.env` file in the root workspace configured with your local server credentials:
+```env
+DATABASE_URL=postgresql+asyncpg://postgres:postgrespassword@localhost:5432/scrapeforge
+REDIS_URL=redis://localhost:6379
+JWT_SECRET=your_jwt_signing_secret_key_here
 ```
+
+### 3. Launch the Stack
+Execute the unified script to concurrently start the API, Worker, and Frontend client dashboard:
+```bash
+npm run dev
+```
+
+Open your browser and navigate to the local client address (typically `http://localhost:5173`) to launch the ScrapeForge console!

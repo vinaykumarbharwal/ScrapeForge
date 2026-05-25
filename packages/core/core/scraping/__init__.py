@@ -1,1 +1,1 @@
-# ScrapeForge Core Scraping Modules
+# ScrapeForge Core Scraping Subpackage
