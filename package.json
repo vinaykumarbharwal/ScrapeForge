@@ -8,12 +8,10 @@
   ],
   "scripts": {
     "dev": "concurrently --kill-others \"npm run dev:api\" \"npm run dev:worker\" \"npm run dev:frontend\"",
-    "dev:api": "python apps/api/src/main.py",
-    "dev:worker": "arq apps.worker.src.main.WorkerSettings",
+    "dev:api": "python apps/api/src/api_gateway.py",
+    "dev:worker": "arq apps.worker.src.scraper_worker.WorkerSettings",
     "dev:frontend": "npm run dev --workspace=@scrapeforge/frontend",
-    "python:install": "pip install -r requirements.txt && playwright install chromium",
-    "docker:up": "docker-compose up -d",
-    "docker:down": "docker-compose down"
+    "python:install": "pip install -r requirements.txt && playwright install chromium"
   },
   "keywords": [
     "scraper",

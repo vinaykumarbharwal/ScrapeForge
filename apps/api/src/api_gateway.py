@@ -567,6 +567,33 @@ async def enrich_schema(payload: EnrichPayload, current_user: User = Depends(get
         suggestions[col] = clean
     return suggestions
 
+class SuggestSelectorsPayload(BaseModel):
+    prompt: str
+    elements: List[dict]
+
+@app.post("/api/ai/suggest-selectors")
+async def suggest_selectors(payload: SuggestSelectorsPayload, current_user: User = Depends(get_current_user)):
+    from core.scraping.vector_vsm import match_elements
+    try:
+        matches = match_elements(payload.prompt, payload.elements, limit=3)
+        if not matches:
+            return {"status": "no_match", "matches": []}
+            
+        results = []
+        for el, score in matches:
+            results.append({
+                "selector": el.get("selector"),
+                "tagName": el.get("tagName"),
+                "text": el.get("text"),
+                "score": score
+            })
+        return {
+            "status": "success",
+            "matches": results
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"AI auto-selection failed: {str(e)}")
+
 # WebSockets Console Endpoint
 @app.websocket("/ws/runs/{run_id}")
 async def websocket_run_console(websocket: WebSocket, run_id: str):

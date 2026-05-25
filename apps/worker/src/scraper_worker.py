@@ -310,6 +310,48 @@ async def scrape_task_job(ctx, task_id: str, run_id: str):
                                 binds[col.name] = val_str
                                 
                         await conn.execute(insert_data, binds)
+                        
+                # --- ML & AI Track: Vector/RAG Ingestion Sync Pipeline ---
+                await publish_status(ctx, run_id, "running", pages_visited, len(all_extracted_rows), "Initializing semantic vector database / RAG pipeline sync...")
+                
+                async with engine.begin() as conn:
+                    # 1. Create embeddings table if not exists
+                    await conn.execute(text("""
+                        CREATE TABLE IF NOT EXISTS scrape_embeddings (
+                            id UUID PRIMARY KEY,
+                            task_id UUID NOT NULL,
+                            run_id UUID NOT NULL,
+                            content TEXT NOT NULL,
+                            vector_weights TEXT NOT NULL,
+                            created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+                        );
+                    """))
+                    
+                    # 2. Build corpus to train the VectorSpaceModel
+                    corpus_texts = []
+                    for row in all_extracted_rows:
+                        # Combine text fields
+                        combined = " ".join([str(val) for val in row.values() if val is not None])
+                        corpus_texts.append(combined)
+                        
+                    if corpus_texts:
+                        from core.scraping.vector_vsm import VectorSpaceModel
+                        vsm = VectorSpaceModel(corpus_texts)
+                        
+                        insert_embedding = text("""
+                            INSERT INTO scrape_embeddings (id, task_id, run_id, content, vector_weights, created_at)
+                            VALUES (gen_random_uuid(), :task_id, :run_id, :content, :vector_weights, now())
+                        """)
+                        
+                        for combined in corpus_texts:
+                            weights = vsm.get_tfidf_vector(combined)
+                            await conn.execute(insert_embedding, {
+                                "task_id": task_uuid,
+                                "run_id": run_uuid,
+                                "content": combined,
+                                "vector_weights": json.dumps(weights)
+                            })
+                        print(f"RAG Sync complete: Vector Space Model indexed {len(corpus_texts)} documents.")
 
             # Update DB run to Success
             finished_time = datetime.utcnow()

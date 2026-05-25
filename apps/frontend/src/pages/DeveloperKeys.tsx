@@ -4,7 +4,7 @@ import Header from '../components/Header';
 import { useAuthStore } from '../store/authStore';
 import { Key, Copy, Check, ShieldCheck, Terminal, HelpCircle } from 'lucide-react';
 
-export default function Settings() {
+export default function DeveloperKeys() {
   const token = useAuthStore((state) => state.token);
   const [apiKey, setApiKey] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);

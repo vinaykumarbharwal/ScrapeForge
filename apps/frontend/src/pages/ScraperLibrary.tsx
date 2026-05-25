@@ -26,7 +26,7 @@ interface Task {
   last_run_at: string | null;
 }
 
-export default function Tasks() {
+export default function ScraperLibrary() {
   const token = useAuthStore((state) => state.token);
   const navigate = useNavigate();
   const [tasks, setTasks] = useState<Task[]>([]);

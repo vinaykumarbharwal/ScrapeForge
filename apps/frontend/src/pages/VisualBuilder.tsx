@@ -51,6 +51,50 @@ export default function VisualBuilder() {
   const [newFieldType, setNewFieldType] = useState('text');
 
   const [suggestingSchema, setSuggestingSchema] = useState(false);
+  const [aiPrompt, setAiPrompt] = useState('');
+  const [aiMatching, setAiMatching] = useState(false);
+
+  const handleAIAutoSelect = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!aiPrompt.trim() || elements.length === 0) return;
+    setAiMatching(true);
+    try {
+      const res = await fetch('http://localhost:3000/api/ai/suggest-selectors', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          prompt: aiPrompt,
+          elements: elements.map(el => ({
+            selector: el.selector,
+            tagName: el.tagName,
+            text: el.text
+          }))
+        })
+      });
+      const data = await res.json();
+      if (res.ok && data.status === 'success' && data.matches.length > 0) {
+        const bestMatch = data.matches[0];
+        setSelectedElement({
+          selector: bestMatch.selector,
+          tagName: bestMatch.tagName,
+          text: bestMatch.text || '',
+          x: 0, y: 0, width: 0, height: 0
+        });
+        setNewFieldName(aiPrompt.toLowerCase().replace(/[^a-z0-9_]/g, '_'));
+        setAiPrompt('');
+      } else {
+        alert("AI selector agent was unable to find a confident match. Try refining your keyword terms!");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Failed to connect to AI suggestion gate.");
+    } finally {
+      setAiMatching(false);
+    }
+  };
 
   const handleAISuggest = async () => {
     if (fields.length === 0) return;
@@ -278,6 +322,29 @@ export default function VisualBuilder() {
                   />
                 </div>
               </div>
+
+              {screenshot && (
+                <div className="glass-panel" style={{ padding: '16px', marginTop: '20px', border: '1px solid rgba(139, 92, 246, 0.15)', backgroundColor: 'rgba(139, 92, 246, 0.02)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
+                    <Sparkles size={16} color="#8b5cf6" />
+                    <h4 style={{ margin: 0, fontSize: '13px', fontWeight: 600, color: '#a78bfa' }}>AI Semantic Selector Agent</h4>
+                  </div>
+                  <form onSubmit={handleAIAutoSelect} style={{ display: 'flex', gap: '8px' }}>
+                    <input 
+                      type="text" 
+                      required 
+                      className="form-input" 
+                      placeholder="e.g. quote, price, title"
+                      value={aiPrompt}
+                      onChange={(e) => setAiPrompt(e.target.value)}
+                      style={{ fontSize: '12px' }}
+                    />
+                    <button type="submit" className="btn btn-primary" style={{ padding: '0 12px', fontSize: '12px', whiteSpace: 'nowrap' }} disabled={aiMatching}>
+                      {aiMatching ? 'Matching...' : 'Auto-Map'}
+                    </button>
+                  </form>
+                </div>
+              )}
 
               <div style={styles.fieldsContainer}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>

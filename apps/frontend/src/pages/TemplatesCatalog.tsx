@@ -56,7 +56,7 @@ const TEMPLATES: Template[] = [
   }
 ];
 
-export default function Templates() {
+export default function TemplatesCatalog() {
   const token = useAuthStore((state) => state.token);
   const navigate = useNavigate();
   const [importingId, setImportingId] = useState<string | null>(null);

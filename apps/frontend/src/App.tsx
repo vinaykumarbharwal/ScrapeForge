@@ -7,10 +7,10 @@ import { useAuthStore } from './store/authStore';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
-import Tasks from './pages/Tasks';
-import Settings from './pages/Settings';
+import ScraperLibrary from './pages/ScraperLibrary';
+import DeveloperKeys from './pages/DeveloperKeys';
 import VisualBuilder from './pages/VisualBuilder';
-import Templates from './pages/Templates';
+import TemplatesCatalog from './pages/TemplatesCatalog';
 
 const queryClient = new QueryClient();
 
@@ -51,7 +51,7 @@ function App() {
             path="/tasks" 
             element={
               <ProtectedRoute>
-                <Tasks />
+                <ScraperLibrary />
               </ProtectedRoute>
             } 
           />
@@ -67,7 +67,7 @@ function App() {
             path="/settings" 
             element={
               <ProtectedRoute>
-                <Settings />
+                <DeveloperKeys />
               </ProtectedRoute>
             } 
           />
@@ -75,7 +75,7 @@ function App() {
             path="/templates" 
             element={
               <ProtectedRoute>
-                <Templates />
+                <TemplatesCatalog />
               </ProtectedRoute>
             } 
           />
