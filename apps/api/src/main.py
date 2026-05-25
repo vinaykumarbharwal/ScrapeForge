@@ -458,8 +458,19 @@ async def screenshot_proxy(payload: ScreenshotPayload, current_user: User = Depe
             context = await browser.new_context(viewport={"width": 1280, "height": 800})
             page = await context.new_page()
             
-            # Go to target URL
-            await page.goto(payload.url, wait_until="networkidle", timeout=30000)
+            # Optimize page loading speed by blocking heavy assets (images, media, tracking cookies, web sockets, fonts)
+            async def block_resources(route):
+                req = route.request
+                if req.resource_type in ("image", "media", "font", "websocket") or "analytics" in req.url or "doubleclick" in req.url:
+                    await route.abort()
+                else:
+                    await route.continue_()
+            
+            await page.route("**/*", block_resources)
+            
+            # Go to target URL with optimized DOM loading constraints
+            await page.goto(payload.url, wait_until="domcontentloaded", timeout=15000)
+            await page.wait_for_timeout(1000) # Graceful delay to let basic layout scripts run
             
             # Capture viewport screenshot (base64)
             screenshot_bytes = await page.screenshot(type="jpeg", quality=80)

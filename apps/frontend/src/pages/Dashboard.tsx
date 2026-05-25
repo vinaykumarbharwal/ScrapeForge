@@ -70,6 +70,13 @@ export default function Dashboard() {
   useEffect(() => {
     if (token) {
       fetchDashboardData();
+      
+      // Real-time polling: refresh every 5 seconds
+      const interval = setInterval(() => {
+        fetchDashboardData();
+      }, 5000);
+      
+      return () => clearInterval(interval);
     }
   }, [token]);
 

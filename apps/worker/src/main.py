@@ -145,6 +145,16 @@ async def scrape_task_job(ctx, task_id: str, run_id: str):
                 page = await context.new_page()
                 await apply_anti_detection(page)
                 
+                # Speed up crawls by blocking heavy images, media, tracking ads, and fonts
+                async def block_resources(route):
+                    req = route.request
+                    if req.resource_type in ("image", "media", "font", "websocket") or "analytics" in req.url or "doubleclick" in req.url:
+                        await route.abort()
+                    else:
+                        await route.continue_()
+                
+                await page.route("**/*", block_resources)
+                
                 pag_config = config_data.get("pagination", {})
                 max_pages = pag_config.get("maxPages", 1)
                 
@@ -163,7 +173,9 @@ async def scrape_task_job(ctx, task_id: str, run_id: str):
                     await publish_status(ctx, run_id, "running", page_num, len(all_extracted_rows), f"Crawling page {page_num}...")
                     
                     try:
-                        await page.goto(current_url, wait_until="networkidle", timeout=30000)
+                        # Optimized DOM loading triggers
+                        await page.goto(current_url, wait_until="domcontentloaded", timeout=15000)
+                        await page.wait_for_timeout(500) # Quick layout settle delay
                         pages_visited += 1
                         
                         # Extract row blocks
