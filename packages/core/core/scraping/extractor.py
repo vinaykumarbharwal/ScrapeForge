@@ -28,6 +28,49 @@ class FieldExtractor:
 
     def extract_list(self, fields: List[SelectorField], container_selector: Optional[str] = None) -> List[Dict[str, Any]]:
         results: List[Dict[str, Any]] = []
+        import re
+
+        # Dynamic container selector auto-inference for absolute selectors
+        if not container_selector and len(fields) > 1:
+            try:
+                split_selectors = []
+                for f in fields:
+                    if not f.selector:
+                        continue
+                    norm = re.sub(r'\s*>\s*', ' > ', f.selector.strip())
+                    parts = norm.split(' > ')
+                    split_selectors.append(parts)
+
+                if split_selectors and all(len(parts) > 1 for parts in split_selectors):
+                    min_len = min(len(parts) for parts in split_selectors)
+                    common_parts = []
+                    for i in range(min_len):
+                        part = split_selectors[0][i]
+                        if all(parts[i] == part for parts in split_selectors):
+                            common_parts.append(part)
+                        else:
+                            break
+                    
+                    if common_parts:
+                        inferred_prefix = " > ".join(common_parts)
+                        test_containers = self.soup.select(inferred_prefix)
+                        if len(test_containers) > 1:
+                            container_selector = inferred_prefix
+                            relative_fields = []
+                            for f in fields:
+                                norm = re.sub(r'\s*>\s*', ' > ', f.selector.strip())
+                                suffix = norm[len(inferred_prefix):].strip()
+                                if suffix.startswith('>'):
+                                    suffix = suffix[1:].strip()
+                                relative_fields.append(SelectorField(
+                                    name=f.name,
+                                    selector=suffix,
+                                    type=f.type,
+                                    attr=f.attr
+                                ))
+                            fields = relative_fields
+            except Exception as e:
+                print(f"Auto-infer container selector failed: {e}")
 
         if container_selector:
             # 1. Container-based extraction (premium SaaS-grade approach)
