@@ -310,10 +310,6 @@ export default function ScraperLibrary() {
                 <Layers size={16} />
                 <span>Visual Canvas Builder</span>
               </button>
-              <button onClick={() => setIsCreateOpen(true)} className="btn btn-secondary">
-                <Plus size={16} />
-                <span>Create Manual Scraper</span>
-              </button>
             </div>
           </div>
 
@@ -367,120 +363,6 @@ export default function ScraperLibrary() {
             </div>
           )}
         </div>
-
-        {/* --- MODAL: CREATE TASK --- */}
-        {isCreateOpen && (
-          <div style={styles.modalOverlay}>
-            <div className="glass-panel" style={styles.modalContent}>
-              <div style={styles.modalHeader}>
-                <h3>Build Visual Scraper Layout</h3>
-                <button onClick={() => setIsCreateOpen(false)} style={styles.closeBtn}><X size={18} /></button>
-              </div>
-
-              <form onSubmit={handleCreateTask}>
-                <div className="form-group">
-                  <label className="form-label">Task Identifier Name</label>
-                  <input 
-                    type="text" 
-                    required 
-                    className="form-input" 
-                    placeholder="e.g. Amazon Books" 
-                    value={name} 
-                    onChange={(e) => setName(e.target.value)}
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label">Target Scrape URL</label>
-                  <input 
-                    type="url" 
-                    required 
-                    className="form-input" 
-                    placeholder="https://example.com/products" 
-                    value={startUrl} 
-                    onChange={(e) => setStartUrl(e.target.value)}
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label">Container Block CSS Selector (Optional)</label>
-                  <input 
-                    type="text" 
-                    className="form-input" 
-                    placeholder="e.g. .product-card, tr.item" 
-                    value={containerSelector} 
-                    onChange={(e) => setContainerSelector(e.target.value)}
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label">Repeated Schedule Cron (Optional)</label>
-                  <input 
-                    type="text" 
-                    className="form-input" 
-                    placeholder="e.g. */15 * * * * (Every 15 minutes)" 
-                    value={scheduleCron} 
-                    onChange={(e) => setScheduleCron(e.target.value)}
-                  />
-                  <small style={{ fontSize: '11px', color: '#6b7280', marginTop: '4px', display: 'block' }}>
-                    Standard cron syntax. Timezone calculated based on your account settings.
-                  </small>
-                </div>
-
-                <div style={styles.fieldsSection}>
-                  <div style={styles.fieldsHeader}>
-                    <span>Selectors / Fields Mapping</span>
-                    <button type="button" onClick={handleAddField} className="btn btn-secondary" style={{ padding: '4px 10px', fontSize: '12px' }}>
-                      Add Field
-                    </button>
-                  </div>
-
-                  <div style={styles.fieldsList}>
-                    {fields.map((field, idx) => (
-                      <div key={idx} style={styles.fieldRow}>
-                        <input 
-                          type="text" 
-                          required 
-                          placeholder="field_name" 
-                          className="form-input" 
-                          style={{ flex: 1 }}
-                          value={field.name}
-                          onChange={(e) => handleFieldChange(idx, 'name', e.target.value)}
-                        />
-                        <input 
-                          type="text" 
-                          required 
-                          placeholder="css selector" 
-                          className="form-input" 
-                          style={{ flex: 2 }}
-                          value={field.selector}
-                          onChange={(e) => handleFieldChange(idx, 'selector', e.target.value)}
-                        />
-                        <select 
-                          className="form-input" 
-                          style={{ width: '100px' }}
-                          value={field.type}
-                          onChange={(e) => handleFieldChange(idx, 'type', e.target.value)}
-                        >
-                          <option value="text">Text</option>
-                          <option value="html">HTML</option>
-                        </select>
-                        <button type="button" onClick={() => handleRemoveField(idx)} style={styles.removeFieldBtn}>
-                          <X size={16} />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div style={styles.modalFooter}>
-                  <button type="button" onClick={() => setIsCreateOpen(false)} className="btn btn-secondary">Cancel</button>
-                  <button type="submit" className="btn btn-primary">Save Config</button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
 
         {/* --- MODAL: VIEW DATA --- */}
         {isDataOpen && activeData && (
@@ -597,7 +479,7 @@ const styles: Record<string, React.CSSProperties> = {
   layout: {
     display: 'flex',
     minHeight: '100vh',
-    backgroundColor: '#06070c',
+    backgroundColor: 'var(--bg-main)',
   },
   main: {
     flex: 1,
@@ -618,15 +500,15 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: '20px',
     fontWeight: 600,
     margin: 0,
-    color: '#fff',
+    color: 'var(--text-main)',
   },
   pageSub: {
     fontSize: '13px',
-    color: '#9ca3af',
+    color: 'var(--text-muted)',
     margin: '4px 0 0 0',
   },
   loadingState: {
-    color: '#9ca3af',
+    color: 'var(--text-muted)',
     fontSize: '14px',
     textAlign: 'center',
     padding: '40px',
@@ -653,12 +535,12 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: '16px',
     fontWeight: 600,
     margin: '0 0 6px 0',
-    color: '#fff',
+    color: 'var(--text-main)',
   },
   deleteBtn: {
     background: 'none',
     border: 'none',
-    color: '#6b7280',
+    color: 'var(--text-muted)',
     cursor: 'pointer',
     padding: '4px',
     transition: 'color 0.2s',
@@ -675,7 +557,7 @@ const styles: Record<string, React.CSSProperties> = {
     alignItems: 'center',
     gap: '8px',
     fontSize: '13px',
-    color: '#9ca3af',
+    color: 'var(--text-muted)',
   },
   urlPreview: {
     whiteSpace: 'nowrap',
@@ -695,10 +577,10 @@ const styles: Record<string, React.CSSProperties> = {
   emptyState: {
     textAlign: 'center',
     padding: '80px 40px',
-    backgroundColor: 'rgba(255,255,255,0.01)',
-    border: '1px dashed rgba(255,255,255,0.1)',
+    backgroundColor: 'var(--bg-panel)',
+    border: '1px dashed var(--border)',
     borderRadius: '12px',
-    color: '#9ca3af',
+    color: 'var(--text-muted)',
   },
   modalOverlay: {
     position: 'fixed',
@@ -706,7 +588,7 @@ const styles: Record<string, React.CSSProperties> = {
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0,0,0,0.6)',
+    backgroundColor: 'rgba(0,0,0,0.4)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -740,13 +622,13 @@ const styles: Record<string, React.CSSProperties> = {
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: '24px',
-    borderBottom: '1px solid rgba(255,255,255,0.05)',
+    borderBottom: '1px solid var(--border)',
     paddingBottom: '16px',
   },
   closeBtn: {
     background: 'none',
     border: 'none',
-    color: '#9ca3af',
+    color: 'var(--text-muted)',
     cursor: 'pointer',
   },
   fieldsSection: {
@@ -757,7 +639,7 @@ const styles: Record<string, React.CSSProperties> = {
     justifyContent: 'space-between',
     alignItems: 'center',
     fontSize: '14px',
-    color: '#9ca3af',
+    color: 'var(--text-muted)',
     fontWeight: 500,
     marginBottom: '12px',
   },
@@ -774,7 +656,7 @@ const styles: Record<string, React.CSSProperties> = {
   removeFieldBtn: {
     background: 'none',
     border: 'none',
-    color: '#f43f5e',
+    color: 'var(--error)',
     cursor: 'pointer',
   },
   modalFooter: {
@@ -782,14 +664,14 @@ const styles: Record<string, React.CSSProperties> = {
     justifyContent: 'flex-end',
     gap: '12px',
     marginTop: '32px',
-    borderTop: '1px solid rgba(255,255,255,0.05)',
+    borderTop: '1px solid var(--border)',
     paddingTop: '20px',
   },
   tableWrapper: {
     marginTop: '20px',
   },
   emptyTable: {
-    color: '#6b7280',
+    color: 'var(--text-muted)',
     fontSize: '14px',
     textAlign: 'center',
     padding: '40px',
@@ -797,7 +679,7 @@ const styles: Record<string, React.CSSProperties> = {
   consoleBody: {
     height: '350px',
     backgroundColor: '#05070a',
-    border: '1px solid rgba(255,255,255,0.07)',
+    border: '1px solid var(--border)',
     borderRadius: '8px',
     padding: '16px',
     overflowY: 'auto',

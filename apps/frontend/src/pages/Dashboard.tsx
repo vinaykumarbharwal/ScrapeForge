@@ -145,11 +145,11 @@ export default function Dashboard() {
                           <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0.0}/>
                         </linearGradient>
                       </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                      <XAxis dataKey="date" stroke="#9ca3af" fontSize={11} />
-                      <YAxis stroke="#9ca3af" fontSize={11} />
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                      <XAxis dataKey="date" stroke="var(--text-muted)" fontSize={11} />
+                      <YAxis stroke="var(--text-muted)" fontSize={11} />
                       <Tooltip 
-                        contentStyle={{ backgroundColor: '#0d0f1c', borderColor: 'rgba(255,255,255,0.1)', color: '#fff' }}
+                        contentStyle={{ backgroundColor: 'var(--bg-panel-solid)', borderColor: 'var(--border)', color: 'var(--text-main)' }}
                       />
                       <Area type="monotone" dataKey="rows" stroke="#8b5cf6" strokeWidth={2} fillOpacity={1} fill="url(#colorRows)" name="Rows Scraped" />
                     </AreaChart>
@@ -207,7 +207,7 @@ const styles: Record<string, React.CSSProperties> = {
   layout: {
     display: 'flex',
     minHeight: '100vh',
-    backgroundColor: '#06070c',
+    backgroundColor: 'var(--bg-main)',
   },
   main: {
     flex: 1,
@@ -239,18 +239,18 @@ const styles: Record<string, React.CSSProperties> = {
   metricTitle: {
     fontSize: '14px',
     fontWeight: 500,
-    color: '#9ca3af',
+    color: 'var(--text-muted)',
   },
   metricValue: {
     fontSize: '32px',
     fontWeight: 700,
-    color: '#fff',
+    color: 'var(--text-main)',
     letterSpacing: '-1px',
     marginBottom: '4px',
   },
   metricSub: {
     fontSize: '12px',
-    color: '#6b7280',
+    color: 'var(--text-muted)',
   },
   analyticsGrid: {
     display: 'grid',
@@ -272,7 +272,7 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: '16px',
     fontWeight: 600,
     margin: 0,
-    color: '#fff',
+    color: 'var(--text-main)',
   },
   refreshBtn: {
     padding: '6px 12px',
@@ -286,7 +286,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   noDataState: {
     fontSize: '14px',
-    color: '#6b7280',
+    color: 'var(--text-muted)',
     textAlign: 'center',
   },
   feedPanel: {
@@ -304,8 +304,8 @@ const styles: Record<string, React.CSSProperties> = {
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: '12px',
-    backgroundColor: 'rgba(255,255,255,0.01)',
-    border: '1px solid rgba(255,255,255,0.03)',
+    backgroundColor: 'var(--bg-panel)',
+    border: '1px solid var(--border)',
     borderRadius: '8px',
   },
   feedStatus: {
@@ -320,21 +320,21 @@ const styles: Record<string, React.CSSProperties> = {
   feedItemTitle: {
     fontSize: '13px',
     fontWeight: 500,
-    color: '#e5e7eb',
+    color: 'var(--text-main)',
   },
   feedItemMeta: {
     fontSize: '11px',
-    color: '#9ca3af',
+    color: 'var(--text-muted)',
   },
   feedTime: {
     fontSize: '12px',
-    color: '#6b7280',
+    color: 'var(--text-muted)',
   },
   runningIndicator: {
     width: '10px',
     height: '10px',
     borderRadius: '50%',
-    backgroundColor: '#3b82f6',
+    backgroundColor: 'var(--secondary)',
     animation: 'pulse-blue 1.5s infinite',
   },
 };
