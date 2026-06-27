@@ -1,4 +1,4 @@
-# ScrapeForge 🚀
+# ScrapeForge2.0 🚀
 
 A full-stack, enterprise-grade **Visual Web Scraping Platform & Auto-Schema Ingestion Engine** featuring Playwright visual selector mapping, zero-downtime database DDL migrations, an offline Machine Learning semantic matching engine, and Postgres vector sync.
 
