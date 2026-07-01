@@ -1,4 +1,4 @@
-# ScrapeForge 🚀
+# ScrapePage2.0 🚀
 
 A full-stack, enterprise-grade **Visual Web Scraping Platform & Auto-Schema Ingestion Engine** featuring Playwright visual selector mapping, zero-downtime database DDL migrations, an offline Machine Learning semantic matching engine, and Postgres vector sync.
 
@@ -52,7 +52,7 @@ npm run dev
 
 ---
 
-## ⚙️ How ScrapeForge Works Under the Hood
+## ⚙️ How ScrapePage2.0 Works Under the Hood
 
 1. **Visual Selector Coordinates Proxy:** Plays screenshot coordinate frames in React with transparent interactive bounds to capture visual pointer coordinates.
 2. **SSRF Security Shield:** Fully resolves URLs via DNS queries and filters loops, private networks, or reserved ranges (`127.x.x.x`, `10.x.x.x`, etc.) to prevent SSRF vulnerabilities.
@@ -98,4 +98,4 @@ Execute the unified script to concurrently start the API, Worker, and Frontend c
 npm run dev
 ```
 
-Open your browser and navigate to the local client address (typically `http://localhost:5173`) to launch the ScrapeForge console!
+Open your browser and navigate to the local client address (typically `http://localhost:5173`) to launch the ScrapePage2.0 console!
